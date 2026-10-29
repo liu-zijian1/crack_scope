@@ -1,0 +1,6 @@
+fastapi>=0.100,<1
+uvicorn[standard]>=0.23,<1
+Pillow>=9.0
+numpy>=1.23
+opencv-python-headless>=4.8
+paho-mqtt>=1.6,<2

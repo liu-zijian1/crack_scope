@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrackScope — 基于双目深度相机的裂缝分割与宽度测量</title>
+<script src="assets/chart.umd.min.js"></script>
+<link href="assets/s_82764290.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="crt-overlay"></div>
+<div class="pixel-bg"></div>
+<canvas id="particle-canvas" class="particle-canvas" aria-hidden="true"></canvas>
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ===== ENTRY ANIMATION SCREEN ===== -->
+<div class="entry-screen" id="entry-screen">
+  <div class="entry-crt-flash"></div>
+  <div class="warp-overlay" id="warp-overlay" aria-hidden="true">
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+  <div class="entry-title" id="entry-title"></div>
+  <div class="entry-subtitle">BINOCULAR VISION + YOLO SEGMENTATION // CM4 POWERED</div>
+  <div class="entry-watermark">CRACKSCOPE · STEREO VISION</div>
+  <div class="entry-prompt">[ 点击任意位置进入系统 ]</div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div class="app-container" id="app-container">
+
+  <!-- Sidebar navigation -->
+  <aside class="side-nav" aria-label="主导航">
+    <div class="side-brand">
+      <button class="corner-badge visible" id="corner-badge" title="返回启动页">
+      </button>
+      <span class="side-brand-main">CRACK<br>SCOPE</span>
+      <span class="side-brand-sub">双目深度相机裂缝测量</span>
+    </div>
+    <button class="nav-item" data-section="background" onclick="navigateTo('background')">
+      <span class="nav-icon nav-context" aria-hidden="true"></span>
+      <span class="nav-text">项目背景</span>
+      <span class="nav-code">CONTEXT</span>
+    </button>
+    <button class="nav-item" data-section="showcase" onclick="navigateTo('showcase')">
+      <span class="nav-icon nav-board" aria-hidden="true"></span>
+      <span class="nav-text">设备构成</span>
+      <span class="nav-code">PCB MAP</span>
+    </button>
+    <button class="nav-item" data-section="yolo" onclick="navigateTo('yolo')">
+      <span class="nav-icon nav-yolo" aria-hidden="true"></span>
+      <span class="nav-text">YOLO分割</span>
+      <span class="nav-code">METHOD</span>
+    </button>
+    <button class="nav-item" data-section="stereo" onclick="navigateTo('stereo')">
+      <span class="nav-icon nav-stereo" aria-hidden="true"></span>
+      <span class="nav-text">双目视觉</span>
+      <span class="nav-code">STEREO</span>
+    </button>
+    <button class="nav-item" data-section="dashboard" onclick="navigateTo('dashboard')">
+      <span class="nav-icon nav-scan" aria-hidden="true"></span>
+      <span class="nav-text">开始使用</span>
+      <span class="nav-code">DETECT</span>
+    </button>
+    <div class="side-status">
+      <span class="side-status-dot"></span>
+      <span>CM4 EDGE READY</span>
+      <span class="side-author">OPEN PROJECT</span>
+    </div>
+  </aside>
+
+  <!-- ===== HOME SECTION ===== -->
+  <div class="section active" id="section-home">
+    <div class="home-container">
+      <div class="home-logo">
+        CRACK<br>SCOPE
+      </div>
+      <div class="home-tagline">
+        基于双目深度相机的裂缝分割与宽度测量<br>
+        双目视觉 + YOLO 分割 + CM4 边缘推理
+      </div>
+      <div class="home-menu">
+        <div class="menu-card" onclick="navigateTo('background')">
+          <div class="menu-icon pixel-context-icon" aria-hidden="true"></div>
+          <div class="menu-kicker">PROJECT CONTEXT</div>
+          <div class="menu-title">项目背景</div>
+          <div class="menu-desc">人工巡检痛点 / 裂缝分割 / 双目测宽<br>从工程问题到物联网演示链路</div>
+        </div>
+        <div class="menu-card" onclick="navigateTo('showcase')">
+          <div class="menu-icon pixel-device-icon" aria-hidden="true"></div>
+          <div class="menu-kicker">HARDWARE MAP</div>
+          <div class="menu-title">设备构成</div>
+          <div class="menu-desc">CM4 主控 / 双目相机 / 供电模块 / TF 存储<br>二维布线平面图与部件成本</div>
+        </div>
+        <div class="menu-card" onclick="navigateTo('yolo')">
+          <div class="menu-icon pixel-yolo-icon" aria-hidden="true"></div>
+          <div class="menu-kicker">YOLO SEGMENT</div>
+          <div class="menu-title">YOLO分割</div>
+          <div class="menu-desc">数据集制作 / 模型训练 / 距离变换<br>从 mask 到裂缝宽度点</div>
+        </div>
+        <div class="menu-card" onclick="navigateTo('stereo')">
+          <div class="menu-icon pixel-stereo-icon" aria-hidden="true"></div>
+          <div class="menu-kicker">STEREO VISION</div>
+          <div class="menu-title">双目视觉</div>
+          <div class="menu-desc">张正友标定 / 极线校正 / SGBM视差<br>深度换算与裂缝宽度提取</div>
+        </div>
+        <div class="menu-card" onclick="navigateTo('dashboard')">
+          <div class="menu-icon pixel-scan-icon" aria-hidden="true"></div>
+          <div class="menu-kicker">CRACK MEASURE</div>
+          <div class="menu-title">开始使用</div>
+          <div class="menu-desc">拍照检测 / 视频流分割 / 宽度趋势<br>输出裂缝真实宽度 mm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BACKGROUND SECTION ===== -->
+  <div class="section" id="section-background">
+    <button class="back-btn" onclick="navigateTo('home')">&#9664; 返回主页</button>
+    <div class="system-page-layout">
+      <div class="system-main">
+        <div class="system-status-line">
+          <span>[CTX] PROJECT BACKGROUND</span>
+          <span>CRACK WIDTH MONITOR</span>
+          <span>EDGE + WEB</span>
+        </div>
+        <div class="pixel-card system-brief-card">
+          <div class="pixel-card-title">[BACKGROUND] 项目背景</div>
+          <div class="brief-title">为什么要做裂缝联网测宽</div>
+          <p>
+            裂缝宽度变化能反映混凝土结构的安全状态。传统人工巡检依赖测宽仪和人工记录，
+            存在 <mark>效率低</mark>、<mark>成本高</mark>、<mark>结果受经验影响</mark> 等问题，
+            难以形成连续在线监测数据。
+          </p>
+          <p>
+            系统把 <strong>YOLOv8-seg 裂缝分割</strong>、<strong>双目深度测量</strong>、
+            <strong>CM4 边缘推理</strong> 和 <strong>Web 仪表盘</strong> 串成完整链路，
+            让裂缝从"被看到"进一步变成"可测量、可保存、可联网展示"。
+          </p>
+        </div>
+        <div class="keyword-grid compact-keyword-grid">
+          <div class="keyword-chip">
+            <span>01</span>
+            <b>巡检痛点</b>
+            <em>人工记录慢、成本高</em>
+          </div>
+          <div class="keyword-chip">
+            <span>02</span>
+            <b>分割测宽</b>
+            <em>mask 提取裂缝区域</em>
+          </div>
+          <div class="keyword-chip">
+            <span>03</span>
+            <b>边缘计算</b>
+            <em>CM4 本地推理回传</em>
+          </div>
+          <div class="keyword-chip">
+            <span>04</span>
+            <b>平台展示</b>
+            <em>Web 查看并保存结果</em>
+          </div>
+        </div>
+        <div class="pixel-card bg-highlight-card">
+          <div class="pixel-card-title">[FEATURE] 系统亮点</div>
+          <div class="highlight-grid">
+            <div class="highlight-item">
+              <span class="highlight-num">0.001</span>
+              <b>mm 分辨率</b>
+              <em>双目深度逐点精修，斜拍场景下近远端各自独立换算</em>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-num">&lt; 200g</span>
+              <b>手持便携</b>
+              <em>CM4 + USB 双目相机 + 充电宝，单人即可完成现场检测</em>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-num">Demo+Live</span>
+              <b>双模式运行</b>
+              <em>设备离线时可切换 Demo 模式，14 张预推理样例保证课堂演示稳定</em>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="system-side">
+        <div class="pixel-card visual-card">
+          <div class="pixel-card-title">[FLOW] 系统链路图</div>
+          <div class="visual-terminal-bar">
+            <span></span><span></span><span></span>
+            <b>DEVICE -> EDGE -> WEB</b>
+          </div>
+          <figure class="background-figure">
+            <img src="assets/background/project-background.png" alt="双目相机采集、CM4 推理和 Web 展示流程图" onclick="window.zoomImage(this)" style="cursor:pointer">
+          </figure>
+        </div>
+        <div class="pixel-card compact-info-card">
+          <div class="pixel-card-title">[PIPELINE] 流程说明</div>
+          <div class="flow-list">
+            <div><span>01</span><b>设备采集</b><em>USB 双目相机采集左右目图像</em></div>
+            <div><span>02</span><b>边缘推理</b><em>CM4 完成 YOLO mask 与测宽计算</em></div>
+            <div><span>03</span><b>网页展示</b><em>检测结果回传仪表盘并保存</em></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ===== SHOWCASE SECTION ===== -->
+  <div class="section" id="section-showcase">
+    <button class="back-btn" onclick="navigateTo('home')">&#9664; 返回主页</button>
+    <div class="showcase-layout">
+      <div class="showcase-center">
+        <div class="showcase-canvas-wrap">
+          <canvas id="showcase-canvas" width="900" height="620"></canvas>
+          <button class="hardware-toggle" id="hardware-toggle" onclick="toggleAllHardwarePreviews()">显示实物图</button>
+          <div class="hardware-preview" id="hardware-preview" aria-hidden="true">
+            <img id="hardware-preview-img" src="" alt="">
+          </div>
+        </div>
+      </div>
+      <div class="showcase-info-panel" id="showcase-sidebar">
+        <div class="showcase-title">设备构成 / HARDWARE MAP</div>
+        <div class="showcase-subtitle">
+          总价估算 <span style="color:var(--amber);font-family:var(--font-pixel);font-size:0.6rem;">~573 CNY</span><br>
+          点击平面图设备或下方卡片查看详情
+        </div>
+        <div id="component-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== YOLO SECTION ===== -->
+  <div class="section" id="section-yolo">
+    <button class="back-btn" onclick="navigateTo('home')">&#9664; 返回主页</button>
+    <div class="system-page-layout">
+      <div class="system-main">
+        <div class="system-status-line">
+          <span>[CH03] YOLO SEGMENT</span>
+          <span>MASK -> SKELETON -> WIDTH</span>
+          <span>ONNX / DNN</span>
+        </div>
+        <div class="pixel-card system-brief-card">
+          <div class="pixel-card-title">[METHOD] YOLO 裂缝分割与宽度提取</div>
+          <div class="brief-title">从裂缝 mask 到宽度采样点</div>
+          <p>
+            第三章说明系统如何从裂缝图像出发，完成 <mark>数据集制作</mark>、
+            <mark>YOLOv8s-seg 训练部署</mark> 和 <mark>距离变换测宽</mark>。
+            这部分是"看见裂缝"到"量化裂缝宽度"的核心算法链路。
+          </p>
+        </div>
+        <div class="method-grid console-method-grid">
+          <article class="method-card">
+            <span class="method-index">3.1</span>
+            <h3>数据集制作</h3>
+            <p>
+              针对锈蚀钢筋混凝土柱开裂性能进行试件设计，采用电化学加速锈蚀获取锈蚀试件，
+              对通电结束后的表面裂缝进行拍照记录，并通过数据增强扩充训练样本。
+            </p>
+            <div class="method-tags">
+              <span>锈蚀试件</span><span>裂缝拍摄</span><span>数据增强</span>
+            </div>
+          </article>
+          <article class="method-card">
+            <span class="method-index">3.2</span>
+            <h3>模型选择与训练</h3>
+            <p>
+              系统选用 YOLOv8s-seg，单次前向推理同时输出边界框和实例 mask。
+              训练权重导出为 ONNX，并在 CM4 上通过 OpenCV DNN CPU 后端推理。
+            </p>
+            <div class="method-tags">
+              <span>YOLOv8s-seg</span><span>640×640</span><span>ONNX + DNN</span>
+            </div>
+          </article>
+          <article class="method-card">
+            <span class="method-index">3.3</span>
+            <h3>距离变换法</h3>
+            <p>
+              对二值 mask 计算裂缝像素到背景边缘的距离，在距离图上提取骨架点，
+              以骨架点距离值的两倍作为局部像素宽度，再结合双目深度换算毫米宽度。
+            </p>
+            <div class="method-tags">
+              <span>mask 二值图</span><span>骨架采样</span><span>像素宽度×深度</span>
+            </div>
+          </article>
+        </div>
+        <div class="yolo-figure-grid">
+          <figure class="pixel-card yolo-figure-card">
+            <div class="pixel-card-title">[FIG 3] 数据集制作</div>
+            <img src="assets/yolo/dataset-flow.png" alt="数据集制作流程图" onclick="window.zoomImage(this)" style="cursor:pointer">
+            <figcaption>锈蚀试件设计、电化学加速锈蚀、表面裂缝采集与样本增强流程。</figcaption>
+          </figure>
+          <figure class="pixel-card yolo-figure-card">
+            <div class="pixel-card-title">[FIG 4] YOLO 训练结果</div>
+            <img src="assets/yolo/training-results.png" alt="YOLO 模型训练结果曲线" onclick="window.zoomImage(this)" style="cursor:pointer">
+            <figcaption>YOLOv8s-seg 训练过程中的损失、精度和评价指标变化。</figcaption>
+          </figure>
+        </div>
+      </div>
+      <aside class="system-side">
+        <div class="pixel-card compact-info-card">
+          <div class="pixel-card-title">[PARAM] 推理参数</div>
+          <div class="param-grid">
+            <div><span>MODEL</span><b>YOLOv8s-seg</b></div>
+            <div><span>INPUT</span><b>640×640</b></div>
+            <div><span>CONF</span><b>0.05</b></div>
+            <div><span>IOU</span><b>0.45</b></div>
+            <div><span>RUNTIME</span><b>OpenCV DNN</b></div>
+            <div><span>DEVICE</span><b>CM4 CPU</b></div>
+          </div>
+        </div>
+        <div class="pixel-card compact-info-card">
+          <div class="pixel-card-title">[OUTPUT] 输出结果</div>
+          <div class="flow-list">
+            <div><span>A</span><b>裂缝 mask</b><em>定位真实裂缝区域</em></div>
+            <div><span>B</span><b>骨架点</b><em>沿裂缝方向均匀采样</em></div>
+            <div><span>C</span><b>宽度 mm</b><em>结合深度完成物理换算</em></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- ===== STEREO SECTION ===== -->
+  <div class="section" id="section-stereo">
+    <button class="back-btn" onclick="navigateTo('home')">&#9664; 返回主页</button>
+    <div class="system-page-layout">
+      <div class="system-main">
+        <div class="system-status-line">
+          <span>[CH04] STEREO VISION</span>
+          <span>CALIB -> RECTIFY -> SGBM -> DEPTH</span>
+          <span>Q-MATRIX</span>
+        </div>
+        <div class="pixel-card system-brief-card" id="stereo-brief-card">
+          <div class="pixel-card-title">[STEREO] 双目视觉测距</div>
+          <div class="brief-title">从视差到深度，从像素到毫米</div>
+          <p>
+            双目立体视觉通过左右相机视差恢复场景深度，将 YOLO 提取的 <mark>像素宽度</mark>
+            换算为 <mark>物理毫米宽度</mark>。流程涵盖标定、校正、匹配、深度换算四个环节，
+            并引入 <strong>逐点深度精修</strong> 解决斜拍场景的深度不一致问题。
+          </p>
+        </div>
+        <div class="method-grid console-method-grid">
+          <article class="method-card">
+            <span class="method-index">4.1-4.3</span>
+            <h3>标定与极线校正</h3>
+            <p>
+              张正友棋盘格标定获取左右相机内参 K、畸变 D 和相对位姿 R/t，通过 Bouguet 算法将旋转均分到两相机，
+              结合去畸变和行对准生成重映射查找表，使左右图像共面且极线水平对齐，匹配搜索从二维降为一维。
+            </p>
+            <div class="method-tags">
+              <span>棋盘格 8x6 25mm</span><span>亚像素角点</span><span>Bouguet 校正</span>
+            </div>
+          </article>
+          <article class="method-card">
+            <span class="method-index">4.4</span>
+            <h3>SGBM 立体匹配</h3>
+            <p>
+              校正后对左右目灰度图做 CLAHE 增强弱纹理，送入半全局块匹配算法计算视差图。
+              SGBM 引入全局平滑约束 P1/P2 对视差跳变做惩罚，输出亚像素精度视差图。
+            </p>
+            <div class="method-tags">
+              <span>CLAHE 3.0</span><span>SAD 5x5</span><span>P1=600 P2=2400</span><span>disp 768</span>
+            </div>
+          </article>
+          <article class="method-card">
+            <span class="method-index">4.5</span>
+            <h3>深度换算与逐点精修</h3>
+            <p>
+              Q 矩阵将视差重投影为三维坐标 Z(mm)，滤波后裂缝 mask 区域内取深度。
+              每个宽度采样点独立查询自身坐标的深度值，逐点换算 w<sub>mm</sub> = w<sub>px</sub> × Z / f<sub>x</sub>，
+              近远端不再共享统一深度。
+            </p>
+            <div class="method-tags">
+              <span>Q矩阵重投影</span><span>深度滤波 50-3000mm</span><span>逐点精修</span>
+            </div>
+          </article>
+        </div>
+        <div class="stereo-figure-grid">
+          <figure class="pixel-card stereo-figure-card">
+            <div class="pixel-card-title">[FIG 5] 双目视觉原理</div>
+            <img src="assets/stereo/image6.png" alt="双目视觉原理图" onclick="window.zoomImage(this)" style="cursor:pointer">
+            <figcaption>左右相机视差 d = x_l - x_r，深度 Z = f·B / d。</figcaption>
+          </figure>
+          <figure class="pixel-card stereo-figure-card">
+            <div class="pixel-card-title">[FIG 6] 标定样图</div>
+            <img src="assets/stereo/image7.png" alt="标定样图" onclick="window.zoomImage(this)" style="cursor:pointer">
+            <figcaption>不同角度、距离采集的棋盘格图像及角点检测结果。</figcaption>
+          </figure>
+          <figure class="pixel-card stereo-figure-card">
+            <div class="pixel-card-title">[FIG 7] 对极几何</div>
+            <img src="assets/stereo/image8.png" alt="对极几何示意图" onclick="window.zoomImage(this)" style="cursor:pointer">
+            <figcaption>空间点 P 与两光心构成极平面，交线为极线，匹配点必在对应极线上。</figcaption>
+          </figure>
+        </div>
+      </div>
+      <aside class="system-side">
+        <div class="pixel-card compact-info-card">
+          <div class="pixel-card-title">[FORMULA] 核心公式</div>
+          <div class="formula-list">
+            <div><span>01</span><b>深度公式</b><em>Z = f · B / d</em></div>
+            <div><span>02</span><b>宽度换算</b><em>w<sub>mm</sub> = w<sub>px</sub> · Z / f<sub>x</sub></em></div>
+            <div><span>03</span><b>逐点精修</b><em>w<sup>(k)</sup> = w<sup>(k)</sup><sub>px</sub> · Z(y<sub>k</sub>, x<sub>k</sub>) / f<sub>x</sub></em></div>
+          </div>
+        </div>
+        <div class="pixel-card compact-info-card">
+          <div class="pixel-card-title">[PARAM] SGBM 参数</div>
+          <div class="param-grid">
+            <div><span>MIN DISP</span><b>0</b></div>
+            <div><span>NUM DISP</span><b>768 (16x48)</b></div>
+            <div><span>BLOCK SIZE</span><b>5x5</b></div>
+            <div><span>P1 / P2</span><b>600 / 2400</b></div>
+            <div><span>UNIQUENESS</span><b>3</b></div>
+            <div><span>SPECKLE</span><b>10 px</b></div>
+          </div>
+        </div>
+        <div class="pixel-card compact-info-card">
+          <div class="pixel-card-title">[PIPELINE] 双目流程</div>
+          <div class="flow-list">
+            <div><span>01</span><b>标定</b><em>棋盘格获取 K/D/R/t/Q</em></div>
+            <div><span>02</span><b>校正</b><em>Bouguet 行对齐 + 去畸变</em></div>
+            <div><span>03</span><b>匹配</b><em>CLAHE + SGBM 视差图</em></div>
+            <div><span>04</span><b>换算</b><em>Q 矩阵 -> Z -> w_mm</em></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+<!-- ===== DASHBOARD SECTION ===== -->
+  <div class="section" id="section-dashboard">
+    <button class="back-btn" onclick="navigateTo('home')">&#9664; 返回主页</button>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span class="logo">[CrackScope v2.0]</span>
+<span style="font-family:var(--font-pixel);font-size:0.4rem;color:var(--border);" id="dash-clock">--:--</span>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Camera Feeds -->
+      <div class="pixel-card full">
+        <div class="pixel-card-title" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <span>[CAM] 双目相机画面</span>
+          <span class="status-dot offline" id="dot-camera"></span>
+          <span id="txt-camera" style="font-size:0.65rem;">相机未连接</span>
+          <span class="status-dot ready" id="dot-model"></span>
+          <span id="txt-model" style="font-size:0.65rem;">模型未加载</span>
+          <span class="status-dot" id="dot-stream"></span>
+          <span id="txt-stream" style="font-size:0.65rem;">检测空闲</span>
+          <button class="demo-switch active" id="btn-demo-mode" type="button" onclick="toggleDemoMode()" aria-pressed="true" style="margin-left:auto;">
+            <span class="demo-switch-track"><span class="demo-switch-knob"></span></span>
+            <span class="demo-switch-text">演示</span>
+          </button>
+        </div>
+        <div class="camera-grid-2 single-camera">
+          <div class="camera-panel" id="cam-left-panel">
+            <span class="camera-label">LEFT 左相机</span>
+            <div class="cam-placeholder" id="cam-left-ph">
+              <span class="pixel-placeholder-icon">L</span>
+              <span>等待相机连接</span>
+            </div>
+            <img id="cam-left-img" src="" alt="Left">
+            <div class="width-tooltip" id="tip-left"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Actions -->
+      <div class="pixel-card full" style="padding:12px 20px;">
+        <div class="pixel-card-title">[ACTION] 相机与拍照检测</div>
+        <div class="control-row mode-actions">
+          <button class="pixel-btn secondary" id="btn-camera-preview" onclick="toggleCameraPreview()">[CAM] 打开摄像头</button>
+          <button class="pixel-btn secondary" id="btn-capture" onclick="doCapture()">[CAP] 拍照检测</button>
+          <button class="pixel-btn secondary mode-hidden" id="btn-toggle-view" disabled onclick="togglePhotoView()">[VIEW] 切换视图</button>
+          <button class="pixel-btn secondary mode-hidden" id="btn-save-capture" disabled onclick="saveCaptureResult()">[SAVE] 保存</button>
+          <button class="pixel-btn secondary mode-hidden" id="btn-next-capture" disabled onclick="nextCapture()">[NEXT] 下一张</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Clock
+(function tick(){
+    var el=document.getElementById('dash-clock');
+    if(el)el.textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});
+    setTimeout(tick,1000);
+})();
+</script>
+</body>
+</html>

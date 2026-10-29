@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Data
+data/
+
+# OS images (large)
+*.img
+*.img.xz
+
+# Temp / build artifacts
+_docx_media/
+_docx_render/
+_verify/
+report_upload/
+_offline_data.py
+
+# Environment
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets, local data and machine-specific model weights
+.env*
+!.env.example
+data/
+*.db
+*.sqlite
+models/*.pt
+models/*.onnx
+*.pt
+*.onnx
+private-models/
+
+# Personal drafts, generated documents and local deployment helpers
+progress.md
+*.docx
+*.pdf
+deploy/flash_tf.ps1
+deploy/fix_tf.txt
+
+# University marks are not part of the tutorial project
+assets/szu_badge*.png
+assets/szu_seal*.png
